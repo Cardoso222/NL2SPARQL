@@ -4,27 +4,42 @@ from nltk.corpus import stopwords
 import sparql
 
 search = raw_input("Search:")
-result = []
+processedWords = []
 words = nltk.word_tokenize(search)
 sTwords = stopwords.words('english')
 
+#Removing stopwords
 for word in words:
     if word not in sTwords:
-        result.append(word)
+        processedWords.append(word)
 
-tagged_words = nltk.pos_tag(words)
+tagged_words = nltk.pos_tag(processedWords)
 
+#Case who
+if (tagged_words[0][1] == 'WP'):
+    name = ''
+    i = 0
+    for word in tagged_words:
+        if (word[1] == 'NNP'):
+            if (i == 0):
+                name += word[0]
+            else:
+                name += ' ' + word[0]
+        
+            i = i + 1
+    sparql.whois(name)
 
-#caso seja who
-name = ''
-i = 0
-for word in tagged_words:
-    if (word[1] == 'NNP'):
-        if (i == 0):
-            name += word[0]
-        else:
-            name += ' ' + word[0]
-    
-        i = i + 1
+#Case where
+if (tagged_words[0][1] == 'WRB'):
+    place = ''
+    i = 0
+    for word in tagged_words:
+        if (word[1] == 'NN'):
+            if (i == 0):
+                place += word[0]
+            else:
+                place += ' ' + word[0]
+        
+            i = i + 1
+    sparql.whereis(place)
 
-sparql.whois(name)
