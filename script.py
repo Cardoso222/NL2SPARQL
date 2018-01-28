@@ -3,14 +3,8 @@ import nltk
 from nltk.corpus import stopwords
 
 
-# pre processamento para sparql, dps buscar no dbpedia
-# consultas como: qual a capital da bahia ?
-
-
 result = []
-
 words = nltk.word_tokenize("who is Caetano Veloso?")
-
 sTwords = stopwords.words('english')
 
 for word in words:
@@ -19,7 +13,3 @@ for word in words:
 
 print(result)
 print(nltk.pos_tag(words))
-     
-# file = open("result.txt","w") 
-# # file.write(','.join(map(str, posTagger.tag(result)))) 
-
