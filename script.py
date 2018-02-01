@@ -27,7 +27,7 @@ if (tagged_words[0][1] == 'WP'):
             else:
                 name += ' ' + word[0]
         
-            i = i + 1
+            i += 1
     sparql.whois(name)
 
 #Case where
@@ -41,7 +41,21 @@ if (tagged_words[0][1] == 'WRB'):
             else:
                 place += ' ' + word[0]
 
-            i = i + 1
+            i += 1
             
     sparql.whereis(place)
 
+#Case what
+if (tagged_words[0][1] == 'WP' and tagged_words[0][0] == 'What'):
+    term = ''
+    i = 0
+    for word in tagged_words:
+        if (word[1] != 'WP' and word[1] != '.'):
+            if (i == 0):
+                term += word[0]
+            else:
+                term += ' ' + word[0]
+
+            i += 1
+            
+    sparql.whatis(term)

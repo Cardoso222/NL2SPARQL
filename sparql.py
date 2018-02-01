@@ -62,3 +62,27 @@ def whereis(location):
 
   for result in results["results"]["bindings"]:
       print(result["countryLabel"]["value"])
+
+
+def whatis(term):
+  sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+  sql = """ 
+  PREFIX w3-owl: <http://www.w3.org/2002/07/owl#>
+  SELECT ?thing, ?comment, ?label
+    WHERE {
+      ?thing rdf:type w3-owl:Thing.
+      ?thing rdfs:comment ?comment.
+      ?thing rdfs:label ?label.
+      FILTER regex(?label, "^%s", "i").
+      FILTER (lang(?comment) = 'pt')
+    }
+  LIMIT 1
+  """ % ''.join((term))
+
+  sparql.setQuery(sql)
+
+  sparql.setReturnFormat(JSON)
+  results = sparql.query().convert()
+
+  for result in results["results"]["bindings"]:
+      print(result["comment"]["value"])
