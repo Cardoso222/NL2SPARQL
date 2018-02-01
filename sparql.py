@@ -86,3 +86,34 @@ def whatis(term):
 
   for result in results["results"]["bindings"]:
       print(result["comment"]["value"])
+
+def howtocook(term):
+  sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+  sql = """ 
+  PREFIX  dbpedia-owl:  <http://dbpedia.org/ontology/>
+  PREFIX dbpedia: <http://dbpedia.org/resource>
+  PREFIX dbpprop: <http://dbpedia.org/property>
+     SELECT *
+      WHERE {
+        ?dessert rdf:type dbpedia-owl:Food.
+        ?dessert dbpedia-owl:ingredientName ?ing.
+        ?dessert dbpedia-owl:servingTemperature ?servingTemp.
+        ?dessert rdfs:comment ?comment.
+        ?dessert rdfs:label ?label.
+        FILTER regex(?label, "^%s", "i")
+        
+        FILTER (LANG(?comment) = 'pt') 
+
+      }
+      LIMIT 1
+  """ % ''.join((term))
+
+  sparql.setQuery(sql)
+
+  sparql.setReturnFormat(JSON)
+  results = sparql.query().convert()
+
+  for result in results["results"]["bindings"]:
+      print(result["comment"]["value"] + "\n")
+      print('Ingredientes: ' + result["ing"]["value"] + "\n")
+      print('Servir: ' + result["servingTemp"]["value"] + "\n")

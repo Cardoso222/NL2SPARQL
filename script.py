@@ -59,3 +59,18 @@ if (tagged_words[0][1] == 'WP' and tagged_words[0][0] == 'What'):
             i += 1
             
     sparql.whatis(term)
+
+# case how to cook
+if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'How'):
+    term = ''
+    i = 0
+    for word in tagged_words:
+        if (word[1] == 'NNP'):
+            if (i == 0):
+                term += word[0]
+            else:
+                term += ' ' + word[0]
+
+            i += 1
+    
+    sparql.howtocook(term)
