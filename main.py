@@ -14,9 +14,24 @@ for word in words:
         processedWords.append(word)
 
 tagged_words = nltk.pos_tag(processedWords)
+print('Searching...')
+
+#Case where was born
+if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'Where' and tagged_words[1][1] == 'VBN'):
+    term = ''
+    i = 0
+    for word in tagged_words:
+        if (word[1] == 'NNP'):
+            if (i == 0):
+                term += word[0]
+            else:
+                term += ' ' + word[0]
+
+            i += 1
+    
+    sparql.whereWasBorn(term)
 
 #Case who
-print('Searching...')
 if (tagged_words[0][1] == 'WP'):
     name = ''
     i = 0
@@ -28,7 +43,7 @@ if (tagged_words[0][1] == 'WP'):
                 name += ' ' + word[0]
         
             i += 1
-    sparql.whois(name)
+    sparql.whoIs(name)
 
 #Case where
 if (tagged_words[0][1] == 'WRB'):
@@ -43,7 +58,7 @@ if (tagged_words[0][1] == 'WRB'):
 
             i += 1
             
-    sparql.whereis(place)
+    sparql.whereIs(place)
 
 #Case what
 if (tagged_words[0][1] == 'WP' and tagged_words[0][0] == 'What'):
@@ -58,7 +73,7 @@ if (tagged_words[0][1] == 'WP' and tagged_words[0][0] == 'What'):
 
             i += 1
             
-    sparql.whatis(term)
+    sparql.whatIs(term)
 
 # case how to cook
 if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'How'):
@@ -73,4 +88,5 @@ if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'How'):
 
             i += 1
     
-    sparql.howtocook(term)
+    sparql.howToCook(term)
+

@@ -1,7 +1,7 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 
-def whois(person):
+def whoIs(person):
   sparql = SPARQLWrapper("http://dbpedia.org/sparql")
   sql = """ 
       PREFIX  dbpedia-owl:  <http://dbpedia.org/ontology/>
@@ -29,7 +29,7 @@ def whois(person):
       print(result["comment"]["value"])
 
 
-def whereis(location):
+def whereIs(location):
   sparql = SPARQLWrapper("http://dbpedia.org/sparql")
   sql = """ 
       PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
@@ -66,7 +66,7 @@ def whereis(location):
       print(result["countryLabel"]["value"])
 
 
-def whatis(term):
+def whatIs(term):
   sparql = SPARQLWrapper("http://dbpedia.org/sparql")
   sql = """ 
   PREFIX w3-owl: <http://www.w3.org/2002/07/owl#>
@@ -89,7 +89,7 @@ def whatis(term):
   for result in results["results"]["bindings"]:
       print(result["comment"]["value"])
 
-def howtocook(term):
+def howToCook(term):
   sparql = SPARQLWrapper("http://dbpedia.org/sparql")
   sql = """ 
   PREFIX  dbpedia-owl:  <http://dbpedia.org/ontology/>
@@ -119,3 +119,33 @@ def howtocook(term):
       print(result["comment"]["value"] + "\n")
       print('Ingredientes: ' + result["ing"]["value"] + "\n")
       print('Servir: ' + result["servingTemp"]["value"] + "\n")
+
+
+def whereWasBorn(person):
+  sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+  sql = """ 
+      PREFIX dbo: <http://dbpedia.org/ontology/>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+      SELECT *
+      WHERE  { 
+        ?person rdf:type dbo:Person.
+        ?person rdfs:label ?label.
+        ?person dbo:birthPlace ?country.
+        ?country rdfs:label ?birthPlace.
+        FILTER regex(?label, "^%s", "i")
+
+      }
+
+      LIMIT 1
+      """ % ''.join((person))
+  
+  sparql.setQuery(sql)
+  
+
+  sparql.setReturnFormat(JSON)
+  results = sparql.query().convert()
+
+  for result in results["results"]["bindings"]:
+      print(result["birthPlace"]["value"])
