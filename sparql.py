@@ -18,7 +18,7 @@ def whois(person):
       }
       LIMIT 1
       """ % ''.join((person))
-
+  
   sparql.setQuery(sql)
   
 
@@ -45,7 +45,9 @@ def whereis(location):
         ?country rdfs:label ?countryLabel.
         
         FILTER regex(?label, "^%s", "i").
-        FILTER (lang(?countryLabel) = 'pt')
+        OPTIONAL {
+          FILTER (lang(?countryLabel) = 'pt')
+        }
 
 
       }
@@ -60,6 +62,3 @@ def whereis(location):
 
   for result in results["results"]["bindings"]:
       print(result["countryLabel"]["value"])
-
-
-# whereis('statue of liberty')
