@@ -36,19 +36,21 @@ def whereis(location):
       PREFIX dbo: <http://dbpedia.org/ontology/>
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX dbp: <http://dbpedia.org/property/>
 
       SELECT *
       WHERE  { 
-        ?location a dbo:Location .
+        ?location rdf:type dbo:Location.
         ?location dbo:location ?country.
         ?location rdfs:label ?label.
-        ?country rdfs:label ?countryLabel.
-        
-        FILTER regex(?label, "^%s", "i").
         OPTIONAL {
-          FILTER (lang(?countryLabel) = 'pt')
+          ?country dbp:coordinatesType ?city.
         }
+        ?country rdfs:label ?countryLabel.
 
+        FILTER regex(?label, "^%s", "i").
+       
+        
 
       }
       LIMIT 1
