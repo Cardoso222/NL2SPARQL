@@ -1,34 +1,42 @@
 # NL2SPARQL
-Application to convert Natural Language to SPARQL 
-
+Application to convert Natural Language to SPARQL
 
 ![Alt Text](https://media.giphy.com/media/xUNd9MNbpAXrE3QDU4/giphy.gif)
 
 ## Example of Searches
 
 ### Search: Where was born Caetano Veloso?
- `Santo Amaro, Bahia`
+`Brazil`
 
-### Search:Where is London eye?
-`London`
+`Santo Amaro, Bahia`
+
+### Search: Where is London Eye?
+`London Borough of Lambeth`
 
 ### Search: Who is Caetano Veloso?
-` Caetano Emanuel Viana Teles Veloso (Santo Amaro, 7 de agosto de 1942) é um músico, produtor, arranjador e escritor brasileiro.`
+`músico, produtor, arranjador e escritor brasileiro`
 
 ### Search: What is Bitcoin?
-`Bitcoin (símbolo: ฿; abrev: BTC ou XBT) é uma criptomoeda e sistema de pagamento online baseado em protocolo de código aberto que é independente de qualquer autoridade central.`
+`moeda digital descentralizada`
 
 ### Search: How to cook Brigadeiro?
-`O brigadeiro é um doce típico da culinária brasileira. `
+`Doce típico da confeitaria brasileira`
 
-`Ingredientes: Sweetenedcondensed milk,butterandchocolate`
+`Ingredientes: Sweetenedcondensed milk,butterandcocoa powder`
 
-`Servir: Cold, chilled, warm/hot when consumed with a spoon`
+## Requirements
 
+Python 3.9+
 
 ## Download all dependencies
 
-`pip install -r requirements.txt`
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+NLTK data (tokenizer, stopwords, POS tagger) is downloaded automatically on first run.
 
 ## Running
 `python main.py`
