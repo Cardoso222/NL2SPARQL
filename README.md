@@ -40,3 +40,10 @@ NLTK data (tokenizer, stopwords, POS tagger) is downloaded automatically on firs
 
 ## Running
 `python main.py`
+
+## Tests
+
+```
+pip install -r requirements-dev.txt
+pytest
+```

@@ -29,40 +29,62 @@ def extract_after_question_word(tagged_words):
     )
 
 
-def main():
-    ensure_nltk_data()
+def parse_question(search):
+    """Classify a question and extract its subject.
 
-    search = input("Search: ")
+    Returns an (intent, term) tuple; intent is None when the question
+    is empty or not supported.
+    """
     words = nltk.word_tokenize(search)
     stop_words = stopwords.words("english")
     processed_words = [word for word in words if word not in stop_words]
     tagged_words = nltk.pos_tag(processed_words)
 
     if not tagged_words:
-        print("Could not understand the question.")
+        return None, ""
+
+    first_word, first_tag = tagged_words[0]
+
+    if (
+        first_tag == "WRB"
+        and first_word == "Where"
+        and len(tagged_words) > 1
+        and tagged_words[1][1] == "VBN"
+    ):
+        return "where_was_born", extract_proper_nouns(tagged_words)
+    if first_word == "How":
+        return "how_to_cook", extract_proper_nouns(tagged_words)
+    if first_tag == "WRB":
+        return "where_is", extract_after_question_word(tagged_words)
+    if first_word == "What":
+        return "what_is", extract_after_question_word(tagged_words)
+    if first_tag == "WP":
+        return "who_is", extract_proper_nouns(tagged_words)
+    return None, ""
+
+
+HANDLERS = {
+    "where_was_born": sparql.whereWasBorn,
+    "how_to_cook": sparql.howToCook,
+    "where_is": sparql.whereIs,
+    "what_is": sparql.whatIs,
+    "who_is": sparql.whoIs,
+}
+
+
+def main():
+    ensure_nltk_data()
+
+    search = input("Search: ")
+    intent, term = parse_question(search)
+
+    if intent is None:
+        print("Question type not supported.")
         return
 
     print("Searching...")
-    first_word, first_tag = tagged_words[0]
-
     try:
-        if (
-            first_tag == "WRB"
-            and first_word == "Where"
-            and len(tagged_words) > 1
-            and tagged_words[1][1] == "VBN"
-        ):
-            sparql.whereWasBorn(extract_proper_nouns(tagged_words))
-        elif first_word == "How":
-            sparql.howToCook(extract_proper_nouns(tagged_words))
-        elif first_tag == "WRB":
-            sparql.whereIs(extract_after_question_word(tagged_words))
-        elif first_word == "What":
-            sparql.whatIs(extract_after_question_word(tagged_words))
-        elif first_tag == "WP":
-            sparql.whoIs(extract_proper_nouns(tagged_words))
-        else:
-            print("Question type not supported.")
+        HANDLERS[intent](term)
     except urllib.error.HTTPError as e:
         print("DBpedia is unavailable right now (HTTP %s). Try again later." % e.code)
 
