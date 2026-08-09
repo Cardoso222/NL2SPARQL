@@ -1,92 +1,93 @@
-from nltk.tokenize import word_tokenize
+import urllib.error
+
 import nltk
 from nltk.corpus import stopwords
+
 import sparql
 
-search = raw_input("Search:")
-processedWords = []
-words = nltk.word_tokenize(search)
-sTwords = stopwords.words('english')
 
-#Removing stopwords
-for word in words:
-    if word not in sTwords:
-        processedWords.append(word)
+def ensure_nltk_data():
+    resources = [
+        ("tokenizers/punkt_tab", "punkt_tab"),
+        ("corpora/stopwords", "stopwords"),
+        ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+    ]
+    for path, name in resources:
+        try:
+            nltk.data.find(path)
+        except LookupError:
+            nltk.download(name, quiet=True)
 
-tagged_words = nltk.pos_tag(processedWords)
-print('Searching...')
 
-#Case where was born
-if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'Where' and tagged_words[1][1] == 'VBN'):
-    term = ''
-    i = 0
-    for word in tagged_words:
-        if (word[1] == 'NNP'):
-            if (i == 0):
-                term += word[0]
-            else:
-                term += ' ' + word[0]
+def extract_proper_nouns(tagged_words):
+    return " ".join(word for word, tag in tagged_words if tag == "NNP")
 
-            i += 1
-    
-    sparql.whereWasBorn(term)
 
-#Case who
-if (tagged_words[0][1] == 'WP'):
-    name = ''
-    i = 0
-    for word in tagged_words:
-        if (word[1] == 'NNP'):
-            if (i == 0):
-                name += word[0]
-            else:
-                name += ' ' + word[0]
-        
-            i += 1
-    sparql.whoIs(name)
+def extract_after_question_word(tagged_words):
+    return " ".join(
+        word for word, tag in tagged_words if tag not in ("WRB", "WP", ".")
+    )
 
-#Case where
-if (tagged_words[0][1] == 'WRB'):
-    place = ''
-    i = 0
-    for word in tagged_words:
-        if (word[1] != 'WRB' and word[1] != '.'):
-            if (i == 0):
-                place += word[0]
-            else:
-                place += ' ' + word[0]
 
-            i += 1
-            
-    sparql.whereIs(place)
+def parse_question(search):
+    """Classify a question and extract its subject.
 
-#Case what
-if (tagged_words[0][1] == 'WP' and tagged_words[0][0] == 'What'):
-    term = ''
-    i = 0
-    for word in tagged_words:
-        if (word[1] != 'WP' and word[1] != '.'):
-            if (i == 0):
-                term += word[0]
-            else:
-                term += ' ' + word[0]
+    Returns an (intent, term) tuple; intent is None when the question
+    is empty or not supported.
+    """
+    words = nltk.word_tokenize(search)
+    stop_words = stopwords.words("english")
+    processed_words = [word for word in words if word not in stop_words]
+    tagged_words = nltk.pos_tag(processed_words)
 
-            i += 1
-            
-    sparql.whatIs(term)
+    if not tagged_words:
+        return None, ""
 
-# case how to cook
-if (tagged_words[0][1] == 'WRB' and tagged_words[0][0] == 'How'):
-    term = ''
-    i = 0
-    for word in tagged_words:
-        if (word[1] == 'NNP'):
-            if (i == 0):
-                term += word[0]
-            else:
-                term += ' ' + word[0]
+    first_word, first_tag = tagged_words[0]
 
-            i += 1
-    
-    sparql.howToCook(term)
+    if (
+        first_tag == "WRB"
+        and first_word == "Where"
+        and len(tagged_words) > 1
+        and tagged_words[1][1] == "VBN"
+    ):
+        return "where_was_born", extract_proper_nouns(tagged_words)
+    if first_word == "How":
+        return "how_to_cook", extract_proper_nouns(tagged_words)
+    if first_tag == "WRB":
+        return "where_is", extract_after_question_word(tagged_words)
+    if first_word == "What":
+        return "what_is", extract_after_question_word(tagged_words)
+    if first_tag == "WP":
+        return "who_is", extract_proper_nouns(tagged_words)
+    return None, ""
 
+
+HANDLERS = {
+    "where_was_born": sparql.whereWasBorn,
+    "how_to_cook": sparql.howToCook,
+    "where_is": sparql.whereIs,
+    "what_is": sparql.whatIs,
+    "who_is": sparql.whoIs,
+}
+
+
+def main():
+    ensure_nltk_data()
+
+    search = input("Search: ")
+    intent, term = parse_question(search)
+
+    if intent is None:
+        print("Question type not supported.")
+        return
+
+    print("Searching...")
+    try:
+        HANDLERS[intent](term)
+    except urllib.error.HTTPError as e:
+        print("DBpedia is unavailable right now (HTTP %s). Try again later." % e.code)
+
+
+if __name__ == "__main__":
+    main()
